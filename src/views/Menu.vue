@@ -1,19 +1,22 @@
 <template>
 	<div class="menu">
-		<h1>This is an menu page</h1>
-		<div>
-			<el-image :src="fan0_src"></el-image>
-		</div>
 		<el-row>
 			<el-col :span="3">
 				<div class="button-content"></div>
 			</el-col>
 			<el-col :span="9">
-				<div class="temp-display-content bg-purple" name="speed_view">
+				<div class="view-bar" id='cost-view' name="cost_view">
+					{{ room_data.cost + '￥' }}
 				</div>
 			</el-col>
-			<el-col :span="9">
-				<div class="temp-display-content bg-purple" name="mode_view">
+			<el-col :span="5">
+				<div class="view-bar" name="speed_view">
+					<img alt="fan" v-bind:src='fan_src'>
+				</div>
+			</el-col>
+			<el-col :span="4">
+				<div class="view-bar" name="mode_view">
+					<img alt="mode" v-bind:src='mode_src'>
 				</div>
 			</el-col>
 			<el-col :span="3">
@@ -105,14 +108,14 @@
 					rate: 0,
 					power_mode: 0,
 				},
-				fan0_src: '../assets/images/fan0.png',
-				// fan0_src: 'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
-				
+				fan_src: require("../assets/images/fan0.png"),
+				mode_src: require("../assets/images/snow.png"),
 			};
 		},
 		created() {},
 		methods: {
 			temp_add_onclick() {
+				if (!this.room_data.power_mode) return;
 				if (this.room_data.tar_temp >= 30) {
 					this.$notify({
 						title: 'Warn',
@@ -131,6 +134,7 @@
 				});
 			},
 			temp_sub_onclick() {
+				if (!this.room_data.power_mode) return;
 				if (this.room_data.tar_temp <= 16) {
 					this.$notify({
 						title: 'Warn',
@@ -149,6 +153,7 @@
 				});
 			},
 			heating_onclick() {
+				if (!this.room_data.power_mode) return;
 				if (this.room_data.mode == '1') {
 					return;
 				}
@@ -159,8 +164,10 @@
 					type: 'success',
 					duration: 2000
 				});
+				this.mode_src = require("../assets/images/sun.png")
 			},
 			cooling_coclick() {
+				if (!this.room_data.power_mode) return;
 				if (this.room_data.mode == '0') {
 					return;
 				}
@@ -171,8 +178,10 @@
 					type: 'success',
 					duration: 2000
 				});
+				this.mode_src = require("../assets/images/snow.png")
 			},
 			speed_control_onclick() {
+				if (!this.room_data.power_mode) return;
 				var speed = this.room_data.speed;
 				speed = (speed + 1) % 3;
 				this.room_data.speed = speed;
@@ -194,6 +203,7 @@
 					type: 'success',
 					duration: 2000
 				});
+				this.fan_src = require("../assets/images/fan" + speed + '.png')
 			},
 			power_onclick() {
 				if (this.room_data.power_mode) {
@@ -204,6 +214,7 @@
 						type: 'success',
 						duration: 2000
 					});
+					
 				} else {
 					this.room_data.power_mode = 1;
 					this.$notify({
@@ -213,22 +224,24 @@
 						duration: 2000
 					});
 				}
+
 			}
 		}
 	};
 </script>
 <style>
 	.temp-control {
-		font-size: 80px;
+		font-size: 30px;
 	}
 
 	.bg-purple {
-		background: #d3dce6;
+		background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
 	}
 
 	.button-content {
 		border-radius: 4px;
 		min-height: 36px;
+		
 	}
 
 	.temp-display-content {
@@ -237,5 +250,15 @@
 		font-size: 50px;
 		text-align: center;
 		padding-top: 200px;
+	}
+
+	.view-bar {
+		border-radius: 0px;
+		min-height: 53px;
+		background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+	}
+	#cost-view{
+		padding-top: 15px;
+		font-size: 2em;
 	}
 </style>

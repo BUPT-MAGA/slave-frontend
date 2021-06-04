@@ -10,10 +10,6 @@
 					</el-form-item>
 					<el-form-item id="room_id" prop="room_id" label="房间号">
 						<el-input v-model="user.room_id" placeholder="请输入房间号"></el-input>
-						<!-- </el-form-item>
-					<router-link to="/About">找回密码</router-link>
-					<router-link to="/Home">注册账号</router-link>
-					<el-form-item> -->
 						<el-button type="primary" icon="el-icon-delete-solid" @click="reset()">重 置</el-button>
 						<el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
 					</el-form-item>
@@ -83,7 +79,8 @@
 	}
 
 	.login-wrap {
-		background: url("../assets/logo.png") no-repeat;
+		/* background: url("../assets/logo.png") no-repeat; */
+		background-color: rgba(255, 255, 255, 0.4);
 		background-size: cover;
 		width: 600px;
 		height: 400px;
