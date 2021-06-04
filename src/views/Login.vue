@@ -14,7 +14,7 @@
 					<router-link to="/About">找回密码</router-link>
 					<router-link to="/Home">注册账号</router-link>
 					<el-form-item> -->
-						<el-button type="primary" icon="el-icon-upload" @click="reset()">重 置</el-button>
+						<el-button type="primary" icon="el-icon-delete-solid" @click="reset()">重 置</el-button>
 						<el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
 					</el-form-item>
 				</el-form>
