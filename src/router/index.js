@@ -11,7 +11,7 @@ const routes = [
 		component: Home
 	},
 	{
-		path: '/Menu',
+		path: '/Menu/:room_id&:user_id',
 		name: 'menu',
 		// route level code-splitting
 		// this generates a separate chunk (about.[hash].js) for this route
@@ -19,14 +19,10 @@ const routes = [
 		component: () => import( /* webpackChunkName: "about" */ '../views/Menu.vue')
 	},
 	{
-		path: '/Login',
-		name: 'login',
-		component: Login
-	},
-	{
 		path: '/',
 		name: 'login',
-		component: Login
+		component: Login,
+		props: { user: true }
 	}
 ]
 

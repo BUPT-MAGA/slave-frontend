@@ -1,5 +1,11 @@
 <template>
 	<div class="menu">
+		<div>
+			user_id {{room_data.user_id}}
+		</div>
+		<div>
+			room_id {{room_data.room_id}}
+		</div>
 		<el-row>
 			<el-col :span="3">
 				<div class="button-content"></div>
@@ -97,23 +103,110 @@
 		name: "login",
 		data() {
 			return {
+				ws: null,
+				data_timer: null,
+				require_timer: null,
 				room_data: {
 					room_id: "",
 					user_id: "",
 					cur_temp: 26,
 					tar_temp: 28,
-					mode: "",
+					center_air_temp: 20,
+					mode: 0,
 					cost: 0.0,
-					speed: "",
-					rate: 0,
+					speed: 0,
+					interval: 0,
 					power_mode: 0,
 				},
 				fan_src: require("../assets/images/fan0.png"),
 				mode_src: require("../assets/images/snow.png"),
 			};
 		},
+		mounted() {
+			alert("mounted!!!")
+			this.room_data.room_id = this.$route.params.room_id;
+			this.room_data.user_id = this.$route.params.user_id;
+			this.ws = new WebSocket("ws://127.0.0.1:6789/");
+
+			this.ws.onerror = this.onError(event)
+			this.ws.onclose = this.onClose(event)
+			this.ws.onmessage = this.onMessage(event)
+			this.ws.onopen = this.onOpen(event)
+		},
 		created() {},
 		methods: {
+			send_data() {
+				console.log("send_data");
+				this.ws.send(JSON.stringify({
+					event_id: 7,
+					data: {
+						cur_temp: this.room_data.cur_temp,
+						tar_temp: this.room_data.tar_temp,
+						mode: this.room_data.mode,
+						speed: this.room_data.speed
+					}
+				}))
+			},
+			require_from_center() {
+				console.log("require_center");
+				// this.ws.send(JSON.stringify({
+				// 	event_id: 2,
+				// 	data: {
+				// 		mode: this.room_data.mode,
+				// 		speed: this.room_data.speed
+				// 	}
+				// }))
+			},
+			onError: function(evt) {
+				alert('连接失败');
+				evt
+			},
+			onOpen: function(evt) {
+				alert('连接成功');
+				this.data_timer = setInterval(this.send_data, 1000);
+				this.require_timer = setInterval(this.require_from_center, 1000);
+				evt
+			},
+			onClose: function(evt) {
+				clearInterval(this.require_timer);
+				clearInterval(this.data_timer);
+				alert('关闭');
+				evt
+			},
+			onMessage: function(evt) {
+				alert('收到消息');
+				evt
+				// var message = JSON.parse(evt.data);
+				// var eve_id = message.event_id;
+				// var data = message.data;
+				// switch (eve_id) {
+				// 	case 1:
+				// 		/* 中央空调状态反馈 */
+				// 		this.room_data.center_air_temp = data.temp;
+				// 		if (data.mode) {
+				// 			this.heating_onclick();
+				// 		} else {
+				// 			this.cooling_coclick();
+				// 		}
+				// 		break;
+				// 	case 3:
+				// 		/* 主机送风 */
+				// 		var temp_dif = data.temp - this.room_data.cur_temp;
+				// 		this.room_data.cur_temp += temp_dif * 0.001 * data.speed;
+				// 		this.room_data.cost += data.cost;
+				// 		break;
+				// 	case 5:
+				// 		/* 主机同意停止送风 */
+				// 		console.log('主机已停止送风')
+				// 		break;
+				// 	case 6:
+				// 		/* 设置从机状态汇报频率 */
+				// 		this.room_data.interval = data.interval;
+				// 		clearInterval(this.require_timer);
+				// 		this.require_timer = setInterval(this.require_from_center, this.room_data.interval);
+				// 		break;
+				// }
+			},
 			temp_add_onclick() {
 				if (!this.room_data.power_mode) return;
 				if (this.room_data.tar_temp >= 30) {
@@ -135,10 +228,10 @@
 			},
 			temp_sub_onclick() {
 				if (!this.room_data.power_mode) return;
-				if (this.room_data.tar_temp <= 16) {
+				if (this.room_data.tar_temp <= this.room_data.center_air_temp) {
 					this.$notify({
 						title: 'Warn',
-						message: '最低设定温度为16℃',
+						message: '最低设定温度为' + this.room_data.center_air_temp + '℃',
 						type: 'warning',
 						duration: 2000
 					});
@@ -154,10 +247,10 @@
 			},
 			heating_onclick() {
 				if (!this.room_data.power_mode) return;
-				if (this.room_data.mode == '1') {
+				if (this.room_data.mode == 1) {
 					return;
 				}
-				this.room_data.mode = '1';
+				this.room_data.mode = 1;
 				this.$notify({
 					title: 'Mode',
 					message: '已设置为制热模式',
@@ -168,10 +261,10 @@
 			},
 			cooling_coclick() {
 				if (!this.room_data.power_mode) return;
-				if (this.room_data.mode == '0') {
+				if (this.room_data.mode == 0) {
 					return;
 				}
-				this.room_data.mode = '0';
+				this.room_data.mode = 0;
 				this.$notify({
 					title: 'Mode',
 					message: '已设置为制冷模式',
@@ -214,6 +307,11 @@
 						type: 'success',
 						duration: 2000
 					});
+					this.ws.send(JSON.stringify({
+						event_id: 4,
+						data: {}
+					}))
+					this.room_data.cost = 0;
 					
 				} else {
 					this.room_data.power_mode = 1;
@@ -241,7 +339,7 @@
 	.button-content {
 		border-radius: 4px;
 		min-height: 36px;
-		
+
 	}
 
 	.temp-display-content {
@@ -257,7 +355,8 @@
 		min-height: 53px;
 		background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 	}
-	#cost-view{
+
+	#cost-view {
 		padding-top: 15px;
 		font-size: 2em;
 	}

@@ -2,7 +2,7 @@
 	<div class="login" clearfix>
 		<div class="login-wrap">
 			<el-row type="flex" justify="center">
-				<el-form ref="loginForm" :model="user" :rules="rules" status-icon label-width="80px">
+				<el-form ref="loginForm" :model="user" status-icon label-width="80px">
 					<h3>登录</h3>
 					<hr>
 					<el-form-item prop="user_id" label="身份证">
@@ -11,7 +11,8 @@
 					<el-form-item id="room_id" prop="room_id" label="房间号">
 						<el-input v-model="user.room_id" placeholder="请输入房间号"></el-input>
 						<el-button type="primary" icon="el-icon-delete-solid" @click="reset()">重 置</el-button>
-						<el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
+						<el-button type="primary" icon="el-icon-upload" @click="doLogin(user.room_id, user.user_id)">登 录
+						</el-button>
 					</el-form-item>
 				</el-form>
 			</el-row>
@@ -20,7 +21,7 @@
 </template>
 
 <script>
-	import axios from "axios";
+	// import axios from "axios";
 	export default {
 		name: "login",
 		data() {
@@ -33,7 +34,7 @@
 		},
 		created() {},
 		methods: {
-			doLogin() {
+			doLogin(room_id, user_id) {
 				if (!this.user.user_id) {
 					this.$message.error("请输入身份证！");
 					return;
@@ -43,20 +44,26 @@
 				} else {
 					//校验身份证和房间号是否正确;
 					// this.$router.push({ path: "/personal" });
-					axios.post("/login/", {
-							name: this.user.user_id,
-							room_id: this.user.room_id
-						})
-						.then(res => {
-							// console.log("输出response.data.status", res.data.status);
-							if (res.data.status === 200) {
-								this.$router.push({
-									path: "/personal"
-								});
-							} else {
-								alert("您输入的身份证或房间号错误！");
-							}
-						});
+					// axios.post("/login/", {
+					// 		name: this.user.user_id,
+					// 		room_id: this.user.room_id
+					// 	})
+					// 	.then(res => {
+					// 		// console.log("输出response.data.status", res.data.status);
+					// 		if (res.data.status === 200) {
+					// 			this.$router.push({
+					// 				path: "/personal"
+					// 			});
+					// 		} else {
+					// 			alert("您输入的身份证或房间号错误！");
+					// 		}
+					// 	});
+
+					this.$router.push({
+						path: `/Menu/${room_id}&${user_id}`,
+					});
+					room_id = user_id - 1;
+
 				}
 			},
 			reset() {
@@ -64,7 +71,9 @@
 				this.user.room_id = '';
 			}
 
-		}
+		},
+
+
 	};
 </script>
 
