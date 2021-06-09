@@ -73,12 +73,15 @@
 					// 			alert("您输入的身份证或房间号错误！");
 					// 		}
 					// 	});
-
-					this.$router.push({
-						path: `/Menu/${room_id}&${user_id}`,
+					console.log(user_id)
+					console.log(room_id)
+					this.$store.commit('UpdateUserInfo', {
+						user_id: this.user.user_id,
+						room_id: this.user.room_id
 					});
-					room_id = user_id - 1;
-
+					this.$router.push({
+						path: `/users`,
+					})
 				}
 			},
 			reset() {

@@ -2,10 +2,10 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
+import Users from '../views/users/users.vue'
 Vue.use(VueRouter)
 
-const routes = [
-	{
+const routes = [{
 		path: '/home',
 		name: 'Home',
 		component: Home
@@ -22,7 +22,14 @@ const routes = [
 		path: '/',
 		name: 'login',
 		component: Login,
-		props: { user: true }
+		props: {
+			user: true
+		}
+	}, 
+	{
+		path: '/users',
+		name: 'Users',
+		component: Users,
 	}
 ]
 
