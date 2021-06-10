@@ -4,8 +4,8 @@
 			<div>
 				<img style="margin: 0 20%;width: 18%" src='../assets/maga.png' />
 			</div>
-			<el-button style="margin-top:3vh; margin-left: 0%" @click="show = !show;  active = 1" v-if="!show" type="primary"
-				icon="el-icon-right" circle></el-button>
+			<el-button style="margin-top:3vh; margin-left: 0%" @click="show = !show;  active = 1" v-if="!show"
+				type="primary" icon="el-icon-right" circle></el-button>
 			<el-row type="flex" justify="center">
 				<transition name="el-zoom-in-center">
 					<el-form ref="loginForm" :model="user" v-if="show" status-icon label-width="80px">
@@ -16,7 +16,8 @@
 						</el-form-item>
 						<el-form-item id="room_id" prop="room_id" label="房间号">
 							<el-input v-model="user.room_id" placeholder="请输入房间号"></el-input>
-							<el-button style="margin:0 5%; width: 30%;" type="primary" icon="el-icon-delete-solid" @click="reset()">重 置</el-button>
+							<el-button style="margin:0 5%; width: 30%;" type="primary" icon="el-icon-delete-solid"
+								@click="reset()">重 置</el-button>
 							<el-button style="margin:0 10%; width: 30%;" type="primary" icon="el-icon-upload"
 								@click="doLogin(user.room_id, user.user_id)">登 录
 							</el-button>
@@ -47,7 +48,12 @@
 				active: 0
 			};
 		},
-		created() {},
+		created() {
+			
+		},
+		computed: {
+
+		},
 		methods: {
 			doLogin(room_id, user_id) {
 				if (!this.user.user_id) {
@@ -75,18 +81,42 @@
 					// 	});
 					console.log(user_id)
 					console.log(room_id)
-					this.$store.commit('UpdateUserInfo', {
-						user_id: this.user.user_id,
-						room_id: this.user.room_id
-					});
-					this.$router.push({
-						path: `/users`,
-					})
+					this.$store.state.ws = new WebSocket("ws://127.0.0.1:6789/");
+					this.$store.state.ws.onopen = this.open
+					// 监听ws错误信息
+					this.$store.state.ws.onerror = this.error
+					// 监听ws消息
+					this.$store.state.ws.onmessage = this.getMessage
+					this.$store.state.ws.onclose = this.close
 				}
 			},
 			reset() {
 				this.user.user_id = '';
 				this.user.room_id = '';
+			},
+			open: function() {
+				console.log("socket连接成功")
+				
+				this.$store.commit('UpdateUserInfo', {
+					user_id: this.user.user_id,
+					room_id: this.user.room_id
+				});
+
+				this.$router.push({
+					path: `/users`,
+				})
+			},
+			error: function() {
+				console.log("连接错误")
+			},
+			getMessage: function(msg) {
+				console.log(msg.data)
+			},
+			send: function() {
+				console.log("send message")
+			},
+			close: function() {
+				console.log("socket已经关闭")
 			}
 
 		},

@@ -77,12 +77,23 @@
 					moneylist: []
 				},
 				Timer: {
-					timer0: null
+					timer0: null,
+					timer1: null
 				}
 			}
 		},
 		mounted() {
 			this.Timer.timer0 = setInterval(this.getlist, 3000)
+			this.Timer.timer1 = setInterval(this.send_data, 1000)
+			// alert("mounted!!!")
+			// this.room_data.room_id = this.$route.params.room_id;
+			// this.room_data.user_id = this.$route.params.user_id;
+			// this.ws = new WebSocket("ws://127.0.0.1:6789/");
+
+			// this.ws.onerror = this.onError(event)
+			// this.ws.onclose = this.onClose(event)
+			// this.ws.onmessage = this.onMessage(event)
+			// this.ws.onopen = this.onOpen(event)
 		},
 		computed: {
 			PowerMode() {
@@ -164,13 +175,13 @@
 			},
 			send_data() {
 				console.log("send_data");
-				this.ws.send(JSON.stringify({
+				this.$store.state.ws.send(JSON.stringify({
 					event_id: 7,
 					data: {
-						cur_temp: this.room_data.cur_temp,
-						tar_temp: this.room_data.tar_temp,
-						mode: this.room_data.mode,
-						speed: this.room_data.speed
+						cur_temp: this.SlaveState.cur_temp,
+						tar_temp: this.SlaveState.tar_temp,
+						mode: this.SlaveState.mode,
+						speed: this.SlaveState.speed
 					}
 				}))
 			},
@@ -203,43 +214,43 @@
 			onMessage: function(evt) {
 				alert('收到消息');
 				evt
-				// var message = JSON.parse(evt.data);
-				// var eve_id = message.event_id;
-				// var data = message.data;
-				// switch (eve_id) {
-				// 	case 1:
-				// 		/* 中央空调状态反馈 */
-				// 		this.room_data.center_air_temp = data.temp;
-				// 		if (data.mode) {
-				// 			this.heating_onclick();
-				// 		} else {
-				// 			this.cooling_coclick();
-				// 		}
-				// 		break;
-				// 	case 3:
-				// 		/* 主机送风 */
-				// 		var temp_dif = data.temp - this.room_data.cur_temp;
-				// 		this.room_data.cur_temp += temp_dif * 0.001 * data.speed;
-				// 		this.room_data.cost += data.cost;
-				// 		break;
-				// 	case 5:
-				// 		/* 主机同意停止送风 */
-				// 		console.log('主机已停止送风')
-				// 		break;
-				// 	case 6:
-				// 		/* 设置从机状态汇报频率 */
-				// 		this.room_data.interval = data.interval;
-				// 		clearInterval(this.require_timer);
-				// 		this.require_timer = setInterval(this.require_from_center, this.room_data.interval);
-				// 		break;
-				// }
+				var message = JSON.parse(evt.data);
+				var eve_id = message.event_id;
+				var data = message.data;
+				switch (eve_id) {
+					case 1:
+						/* 中央空调状态反馈 */
+						this.room_data.center_air_temp = data.temp;
+						if (data.mode) {
+							this.heating_onclick();
+						} else {
+							this.cooling_coclick();
+						}
+						break;
+					case 3:
+						/* 主机送风 */
+						var temp_dif = data.temp - this.SlaveState.cur_temp;
+						var add_temp = temp_dif * 0.001 * data.speed;
+						var add_cost = data.cost;
+						this.$store.commit('UpdateRoomInfo', {
+							add_temp: add_temp,
+							add_cost: add_cost
+						})
+						break;
+					case 6:
+						/* 设置从机状态汇报频率 */
+						this.room_data.interval = data.interval;
+						clearInterval(this.require_timer);
+						this.require_timer = setInterval(this.require_from_center, this.room_data.interval);
+						break;
+				}
 			},
 		},
 		beforeDestroy() {
 			clearInterval(this.Timer.timer0);
 			this.Timer.timer0 = null;
-			// clearInterval(this.Timer.timer1);
-			// this.Timer.timer1 = null;
+			clearInterval(this.Timer.timer1);
+			this.Timer.timer1 = null;
 			// clearInterval(this.Timer.timer2);
 			// this.Timer.timer2 = null;
 			this.sendOffReq()
