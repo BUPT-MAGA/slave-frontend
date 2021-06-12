@@ -9,8 +9,8 @@ export default new Vuex.Store({
 		SlaveState: {
 			room_id: "101",
 			user_id: "",
-			cur_temp: 30,
-			tar_temp: 26,
+			cur_temp: 26,
+			tar_temp: 24,
 			room_temp: 30,
 			center_air_temp: 20,
 			mode: 0,
@@ -40,6 +40,11 @@ export default new Vuex.Store({
 			state.SlaveState.cur_temp += data.add_temp
 			state.SlaveState.cost += data.add_cost
 		},
-		UpdateCenterTemp: (state, temp) => state.SlaveState.center_air_temp = temp
+		UpdateCenterTemp(state, temp){
+			state.SlaveState.center_air_temp = temp
+		},
+		UpdateInterval(state, interval){
+			state.SlaveState.interval = interval
+		}
 	}
 })

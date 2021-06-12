@@ -4,7 +4,8 @@
 			<div slot="header">
 				<span>房间：{{SlaveState.room_id}}</span>
 			</div>
-			<div>{{text}}&ensp; :&ensp; &ensp; {{chartInfo[chartIndex].nowValue}}&ensp; {{chartInfo[chartIndex].unit}}
+			<div>{{text}}&ensp; :&ensp; &ensp; {{numFilter(chartInfo[chartIndex].nowValue)}}&ensp;
+				{{chartInfo[chartIndex].unit}}
 			</div>
 			<div style="height: 300px; width: 700px; margin-left: 15%; margin-top: 3vh" :id='id'></div>
 		</el-card>
@@ -61,7 +62,8 @@
 				}],
 				chartIndex: 0,
 				text: '',
-				timer: ''
+				timer: '',
+				myChart: null,
 			}
 		},
 		mounted() {
@@ -82,13 +84,21 @@
 				this.statisticInfo.chartOption.title.text = this.chartInfo[this.chartIndex].text
 				this.statisticInfo.chartOption.yAxis.min = this.chartInfo[this.chartIndex].min
 			},
+			// 截取当前数据到小数点后两位
+			numFilter(value) {
+				const realVal = parseFloat(value).toFixed(2);
+				return realVal;
+			},
 			showChart() {
 				this.statisticInfo.chartOption.xAxis.data = this.timelist
 				this.statisticInfo.chartOption.series.data = this.datalist
 				this.chartInfo[this.chartIndex].nowValue = this.datalist[this.datalist.length - 1]
 				var chartDom = document.getElementById(this.id)
-				var myChart = echarts.init(chartDom)
-				myChart.setOption(this.statisticInfo.chartOption, true)
+				// if (this.myChart != null && this.myChart != "" && this.myChart != undefined) {
+				// 	this.myChart.dispose(); //销毁
+				// }
+				this.myChart = echarts.init(chartDom)
+				this.myChart.setOption(this.statisticInfo.chartOption, true)
 			},
 			getId() {
 				return this.id
