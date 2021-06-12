@@ -35,12 +35,12 @@
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="tar_temp">
-					{{ SlaveState.tar_temp + "℃" }}
+					{{ numFilter(SlaveState.tar_temp) + "℃" }}
 				</div>
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="cur_temp">
-					{{ SlaveState.cur_temp + "℃" }}
+					{{ numFilter(SlaveState.cur_temp) + "℃" }}
 				</div>
 			</el-col>
 			<el-col :span="3">
@@ -107,7 +107,11 @@
 			}
 		},
 		methods: {
-
+			// 截取当前数据到小数点后两位
+			numFilter(value) {
+				const realVal = parseFloat(value).toFixed(2);
+				return realVal;
+			},
 			temp_add_onclick() {
 				if (!this.SlaveState.power_mode) return;
 				if (this.SlaveState.tar_temp >= 30) {

@@ -81,7 +81,10 @@
 					// 	});
 					console.log(user_id)
 					console.log(room_id)
-					this.$store.state.ws = new WebSocket("ws://127.0.0.1:6789/");
+					// var url = `ws://10.128.197.119:8080/ws/?room_id=${room_id}&user_id=${user_id}`
+					var url = "ws://127.0.0.1:6789/"
+					console.log(url)
+					this.$store.state.ws = new WebSocket(url);
 					this.$store.state.ws.onopen = this.open
 					// 监听ws错误信息
 					this.$store.state.ws.onerror = this.error
@@ -107,6 +110,12 @@
 				})
 			},
 			error: function() {
+				this.$notify({
+					title: '错误',
+					message: '连接失败',
+					type: 'error',
+					duration: 2000
+				});
 				console.log("连接错误")
 			},
 			getMessage: function(msg) {

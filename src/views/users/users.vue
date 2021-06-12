@@ -1,6 +1,6 @@
 <template>
 
-	<el-container style="height: 120%; border: 1px solid #eee">
+	<el-container style="height: 100vh; border: 1px solid #eee">
 		<el-aside width="20vw" style="background-color: rgb(84, 92, 100)">
 			<el-menu :default-active="default_selected" @select="showChange" background-color="#545c64"
 				text-color="#fff" active-text-color="#ffd04b">
@@ -83,13 +83,9 @@
 			}
 		},
 		mounted() {
-			this.Timer.timer0 = setInterval(this.getlist, 3000)
+			this.Timer.timer0 = setInterval(this.getlist, 5000)
 			this.Timer.timer1 = setInterval(this.send_data, 1000)
-			// alert("mounted!!!")
-			// this.room_data.room_id = this.$route.params.room_id;
-			// this.room_data.user_id = this.$route.params.user_id;
-			// this.ws = new WebSocket("ws://127.0.0.1:6789/");
-
+			this.Timer.timer2 = setInterval(this.tempNatualAdd, 500)
 			// this.ws.onerror = this.onError(event)
 			// this.ws.onclose = this.onClose(event)
 			// this.ws.onmessage = this.onMessage(event)
@@ -101,6 +97,9 @@
 			},
 			SlaveState() {
 				return this.$store.state.SlaveState
+			},
+			ws() {
+				return this.$store.state.ws
 			}
 		},
 		methods: {
@@ -142,17 +141,14 @@
 				this.RoomInfo.templist.push(this.SlaveState.cur_temp)
 				this.RoomInfo.moneylist.push(this.SlaveState.cost)
 			},
-			/**
-			 * sendOffReq() 发送关机请求
-			 */
-			sendOffReq() {
-				console.log("sendOffReq()")
-			},
-			/**
-			 * sendOnOff() 发送开机请求
-			 */
-			sendOnReq() {
-				console.log("sendOnReq()")
+			tempNatualAdd() {
+				var temp_dif = this.SlaveState.room_temp - this.SlaveState.cur_temp;
+				var add_temp = temp_dif * 0.01;
+				var add_cost = 0;
+				this.$store.commit('UpdateRoomInfo', {
+					add_temp: add_temp,
+					add_cost: add_cost
+				})
 			},
 
 			power_onclick() {
@@ -163,19 +159,20 @@
 						type: 'success',
 						duration: 2000
 					});
+					this.ws.close()
+					this.RoomInfo.timelist = []
+					this.RoomInfo.templist = []
+					this.RoomInfo.moneylist = []
 					this.$store.commit('PowerModeChange')
 					this.$router.push({
 						path: '/',
 					});
-					// this.ws.send(JSON.stringify({
-					// 	event_id: 4,
-					// 	data: {}
-					// }))
+					
 				}
 			},
 			send_data() {
 				console.log("send_data");
-				this.$store.state.ws.send(JSON.stringify({
+				this.ws.send(JSON.stringify({
 					event_id: 7,
 					data: {
 						cur_temp: this.SlaveState.cur_temp,
@@ -185,28 +182,15 @@
 					}
 				}))
 			},
-			require_from_center() {
-				console.log("require_center");
-				// this.ws.send(JSON.stringify({
-				// 	event_id: 2,
-				// 	data: {
-				// 		mode: this.room_data.mode,
-				// 		speed: this.room_data.speed
-				// 	}
-				// }))
-			},
 			onError: function(evt) {
 				alert('连接失败');
 				evt
 			},
 			onOpen: function(evt) {
 				alert('连接成功');
-				this.data_timer = setInterval(this.send_data, 1000);
-				this.require_timer = setInterval(this.require_from_center, 1000);
 				evt
 			},
 			onClose: function(evt) {
-				clearInterval(this.require_timer);
 				clearInterval(this.data_timer);
 				alert('关闭');
 				evt
@@ -239,9 +223,9 @@
 						break;
 					case 6:
 						/* 设置从机状态汇报频率 */
-						this.room_data.interval = data.interval;
-						clearInterval(this.require_timer);
-						this.require_timer = setInterval(this.require_from_center, this.room_data.interval);
+						this.$store.commit('data.interval', data.interval)
+						clearInterval(this.timer1);
+						this.timer1 = setInterval(this.send_data(), data.interval);
 						break;
 				}
 			},
@@ -251,9 +235,9 @@
 			this.Timer.timer0 = null;
 			clearInterval(this.Timer.timer1);
 			this.Timer.timer1 = null;
-			// clearInterval(this.Timer.timer2);
-			// this.Timer.timer2 = null;
-			this.sendOffReq()
+			clearInterval(this.Timer.timer2);
+			this.Timer.timer2 = null;
+
 		}
 	}
 </script>
