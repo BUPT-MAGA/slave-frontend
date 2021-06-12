@@ -220,7 +220,7 @@
 				switch (eve_id) {
 					case 1:
 						/* 中央空调状态反馈 */
-						this.room_data.center_air_temp = data.temp;
+						this.$store.commit('UpdateCenterTemp', data.temp)
 						if (data.mode) {
 							this.heating_onclick();
 						} else {
