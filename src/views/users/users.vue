@@ -18,28 +18,22 @@
 
 		<el-container>
 			<el-header>
-				<img style="left:10px;width: 9%" src='../../assets/maga.png' />
-				<img style="margin:0 25%;width: 15%" src='../../assets/maga.png' />
-				<el-popover style="margin:0 1%" trigger="click">
+				
+				<el-popover style="" trigger="click">
+					<el-button slot="reference" type="primary" round>立即付款</el-button>
 					<div>
 						<img style="margin:0 50%;width: 30%" src='../../assets/logo.png' />
 					</div>
-					<el-button slot="reference" type="primary" round>立即付款</el-button>
 				</el-popover>
+				<img style="width: 15%" src='../../assets/maga.png' />
 				<el-button style="margin:0 1%" type="primary" round @click="power_onclick()">关机</el-button>
-				<!-- TODO -->
-				<!-- <span>{{Customer.name}}</span> -->
+				
 			</el-header>
 
 			<el-main>
-				<!-- <sensor ref="sensor"></sensor> -->
-
+				<span></span>
 				<div v-show="show_setting">
-					<!-- <setting ref="set"></setting> -->
-
-					<h3>{{PowerMode}}</h3>
 					<Menu></Menu>
-
 				</div>
 
 				<div v-show="show_money">
@@ -83,13 +77,13 @@
 			}
 		},
 		mounted() {
+			this.init()
 			this.Timer.timer0 = setInterval(this.getlist, 5000)
-			this.Timer.timer1 = setInterval(this.send_data, 1000)
+			this.Timer.timer1 = setInterval(this.send_data, 100)
 			this.Timer.timer2 = setInterval(this.tempNatualAdd, 500)
-			// this.ws.onerror = this.onError(event)
-			// this.ws.onclose = this.onClose(event)
-			// this.ws.onmessage = this.onMessage(event)
-			// this.ws.onopen = this.onOpen(event)
+			this.$store.state.ws.onerror = this.onError
+			this.$store.state.ws.onclose = this.onClose
+			this.$store.state.ws.onmessage = this.onMessage
 		},
 		computed: {
 			PowerMode() {
@@ -107,9 +101,8 @@
 			 * init() 初始化
 			 */
 			init() {
-				this.sendOnReq()
 				this.RoomInfo.timelist.push(0)
-				this.RoomInfo.templist.push(this.SlaveState.tar_temp)
+				this.RoomInfo.templist.push(this.SlaveState.cur_temp)
 				this.RoomInfo.moneylist.push(0)
 			},
 			/**
@@ -144,63 +137,71 @@
 			tempNatualAdd() {
 				var temp_dif = this.SlaveState.room_temp - this.SlaveState.cur_temp;
 				var add_temp = temp_dif * 0.01;
-				var add_cost = 0;
 				this.$store.commit('UpdateRoomInfo', {
 					add_temp: add_temp,
-					add_cost: add_cost
+					add_cost: 0,
 				})
 			},
 
 			power_onclick() {
-				if (this.PowerMode) {
-					this.$notify({
-						title: 'Speed',
-						message: '已关机',
-						type: 'success',
-						duration: 2000
-					});
-					this.ws.close()
-					this.RoomInfo.timelist = []
-					this.RoomInfo.templist = []
-					this.RoomInfo.moneylist = []
-					this.$store.commit('PowerModeChange')
-					this.$router.push({
-						path: '/',
-					});
-					
-				}
+				this.$notify({
+					title: 'Speed',
+					message: '已关机',
+					type: 'success',
+					duration: 2000
+				});
+				this.ws.close()
+				this.RoomInfo.timelist = []
+				this.RoomInfo.templist = []
+				this.RoomInfo.moneylist = []
+
+				this.$store.commit('PowerModeChange')
+				this.$router.push({
+					path: '/',
+				});
 			},
 			send_data() {
-				console.log("send_data");
-				this.ws.send(JSON.stringify({
-					event_id: 7,
-					data: {
-						cur_temp: this.SlaveState.cur_temp,
-						tar_temp: this.SlaveState.tar_temp,
-						mode: this.SlaveState.mode,
-						speed: this.SlaveState.speed
-					}
-				}))
+				if (this.SlaveState.cur_temp > this.SlaveState.tar_temp) {
+					this.ws.send(JSON.stringify({
+						event_id: 7,
+						data: {
+							cur_temp: this.SlaveState.cur_temp,
+							tar_temp: this.SlaveState.tar_temp,
+							mode: this.SlaveState.mode,
+							speed: this.SlaveState.speed
+						}
+					}))
+				} else {
+					this.ws.send(JSON.stringify({
+						event_id: 7,
+						data: {
+							cur_temp: this.SlaveState.cur_temp,
+							tar_temp: this.SlaveState.tar_temp,
+							mode: 2,
+							speed: this.SlaveState.speed
+						}
+					}))
+				}
 			},
 			onError: function(evt) {
-				alert('连接失败');
+				console.log('连接错误');
 				evt
 			},
 			onOpen: function(evt) {
-				alert('连接成功');
+				console.log('连接成功');
 				evt
 			},
 			onClose: function(evt) {
-				clearInterval(this.data_timer);
-				alert('关闭');
+				console.log('关闭');
 				evt
 			},
 			onMessage: function(evt) {
-				alert('收到消息');
-				evt
+				console.log('收到消息');
 				var message = JSON.parse(evt.data);
 				var eve_id = message.event_id;
 				var data = message.data;
+				console.log(">>>>>")
+				console.log(data)
 				switch (eve_id) {
 					case 1:
 						/* 中央空调状态反馈 */
@@ -214,7 +215,7 @@
 					case 3:
 						/* 主机送风 */
 						var temp_dif = data.temp - this.SlaveState.cur_temp;
-						var add_temp = temp_dif * 0.001 * data.speed;
+						var add_temp = temp_dif * 0.01 * data.speed;
 						var add_cost = data.cost;
 						this.$store.commit('UpdateRoomInfo', {
 							add_temp: add_temp,
@@ -237,10 +238,22 @@
 			this.Timer.timer1 = null;
 			clearInterval(this.Timer.timer2);
 			this.Timer.timer2 = null;
-
 		}
 	}
 </script>
 
 <style>
+	.el-header {
+		background-color: #545c64;
+		color: #333;
+		line-height: 6vh;
+	}
+
+	.el-aside {
+		color: #333;
+	}
+	
+	.el-main {
+		margin-top: 12vh;
+	}
 </style>

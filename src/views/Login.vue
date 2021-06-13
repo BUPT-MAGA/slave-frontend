@@ -45,11 +45,37 @@
 					user_id: ""
 				},
 				show: 0,
-				active: 0
+				active: 0,
+				rules: {
+					user_id: [{
+						required: true,
+						message: '身份证号不可为空',
+						trigger: 'blur'
+					},
+					{
+						min: 6,
+						max: 12,
+						message: '长度在 6 到 12 个字符',
+						trigger: 'blur'
+					},
+					],
+					room_id: [{
+							required: true,
+							message: '密码不可为空',
+							trigger: 'blur'
+						},
+						{
+							min: 6,
+							max: 12,
+							message: '长度在 6 到 12 个字符',
+							trigger: 'blur'
+						}
+					],
+				}
 			};
 		},
 		created() {
-			
+
 		},
 		computed: {
 
@@ -63,22 +89,6 @@
 					this.$message.error("请输入房间号！");
 					return;
 				} else {
-					//校验身份证和房间号是否正确;
-					// this.$router.push({ path: "/personal" });
-					// axios.post("/login/", {
-					// 		name: this.user.user_id,
-					// 		room_id: this.user.room_id
-					// 	})
-					// 	.then(res => {
-					// 		// console.log("输出response.data.status", res.data.status);
-					// 		if (res.data.status === 200) {
-					// 			this.$router.push({
-					// 				path: "/personal"
-					// 			});
-					// 		} else {
-					// 			alert("您输入的身份证或房间号错误！");
-					// 		}
-					// 	});
 					console.log(user_id)
 					console.log(room_id)
 					// var url = `ws://10.128.197.119:8080/ws/?room_id=${room_id}&user_id=${user_id}`
@@ -99,7 +109,7 @@
 			},
 			open: function() {
 				console.log("socket连接成功")
-				
+
 				this.$store.commit('UpdateUserInfo', {
 					user_id: this.user.user_id,
 					room_id: this.user.room_id

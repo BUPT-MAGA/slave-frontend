@@ -15,7 +15,7 @@ def state_event():
 
 
 def users_event():
-    return json.dumps({'event_id': 3, 'data': {'temp': 22, 'speed': 1, 'mode': 0, 'cost': 5}})
+    return json.dumps({'event_id': 3, 'data': {'temp': 10, 'speed': 1, 'mode': 0, 'cost': 5}})
 
 
 async def notify_state():
@@ -48,7 +48,7 @@ async def counter(websocket, path):
         async for message in websocket:
             data = json.loads(message)
             print(data)
-        notify_users()
+        # notify_users()
     finally:
         await unregister(websocket)
 

@@ -1,10 +1,10 @@
 <template>
 	<div class="menu">
 		<div>
-			user_id {{SlaveState.user_id}}
+			用户： {{SlaveState.user_id}}
 		</div>
 		<div>
-			room_id {{SlaveState.room_id}}
+			房间： {{SlaveState.room_id}}
 		</div>
 		<el-row>
 			<el-col :span="3">
@@ -12,7 +12,7 @@
 			</el-col>
 			<el-col :span="9">
 				<div class="view-bar" id='cost-view' name="cost_view">
-					{{ SlaveState.cost + '￥' }}
+					{{ numFilter(display_cost, 2) + '￥' }}
 				</div>
 			</el-col>
 			<el-col :span="5">
@@ -35,12 +35,12 @@
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="tar_temp">
-					{{ numFilter(SlaveState.tar_temp) + "℃" }}
+					{{ numFilter(SlaveState.tar_temp, 0) + "℃" }}
 				</div>
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="cur_temp">
-					{{ numFilter(SlaveState.cur_temp) + "℃" }}
+					{{ numFilter(display_cur_temp, 0) + "℃" }}
 				</div>
 			</el-col>
 			<el-col :span="3">
@@ -83,6 +83,9 @@
 		name: "login",
 		data() {
 			return {
+				display_cur_temp: 26,
+				display_tar_temp: 26,
+				display_cost: 0,
 				ws: null,
 				data_timer: null,
 				require_timer: null,
@@ -91,15 +94,8 @@
 			};
 		},
 		mounted() {
-			// alert("mounted!!!")
-			// this.room_data.room_id = this.$route.params.room_id;
-			// this.room_data.user_id = this.$route.params.user_id;
-			// this.ws = new WebSocket("ws://127.0.0.1:6789/");
-
-			// this.ws.onerror = this.onError(event)
-			// this.ws.onclose = this.onClose(event)
-			// this.ws.onmessage = this.onMessage(event)
-			// this.ws.onopen = this.onOpen(event)
+			this.update_display()
+			this.data_timer = setInterval(this.update_display, 1000)
 		},
 		computed: {
 			SlaveState() {
@@ -108,12 +104,16 @@
 		},
 		methods: {
 			// 截取当前数据到小数点后两位
-			numFilter(value) {
-				const realVal = parseFloat(value).toFixed(2);
+			numFilter(value, num) {
+				const realVal = parseFloat(value).toFixed(num);
 				return realVal;
 			},
+			update_display(){
+				this.display_cur_temp = this.SlaveState.cur_temp
+				this.display_tar_temp = this.SlaveState.tar_temp
+				this.display_cost = this.SlaveState.cost
+			},
 			temp_add_onclick() {
-				if (!this.SlaveState.power_mode) return;
 				if (this.SlaveState.tar_temp >= 30) {
 					this.$notify({
 						title: 'Warn',
@@ -132,7 +132,6 @@
 				});
 			},
 			temp_sub_onclick() {
-				if (!this.SlaveState.power_mode) return;
 				if (this.SlaveState.tar_temp <= this.SlaveState.center_air_temp) {
 					this.$notify({
 						title: 'Warn',
@@ -151,7 +150,6 @@
 				});
 			},
 			heating_onclick() {
-				if (!this.SlaveState.power_mode) return;
 				if (this.SlaveState.mode == 1) {
 					return;
 				}
@@ -165,7 +163,6 @@
 				this.mode_src = require("@/assets/images/sun.png")
 			},
 			cooling_coclick() {
-				if (!this.SlaveState.power_mode) return;
 				if (this.SlaveState.mode == 0) {
 					return;
 				}
@@ -179,7 +176,6 @@
 				this.mode_src = require("@/assets/images/snow.png")
 			},
 			speed_control_onclick() {
-				if (!this.SlaveState.power_mode) return;
 				var speed = this.SlaveState.speed;
 				speed = (speed + 1) % 3;
 				this.SlaveState.speed = speed;
@@ -203,6 +199,10 @@
 				});
 				this.fan_src = require("@/assets/images/fan" + speed + '.png')
 			},
+			beforeDestroy() {
+				clearInterval(this.Timer.data_timer);
+				this.Timer.data_timer = null;
+			}
 		}
 	};
 </script>

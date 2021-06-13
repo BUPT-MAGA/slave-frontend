@@ -38,7 +38,7 @@ export default new Vuex.Store({
 		},
 		UpdateRoomInfo(state, data){
 			state.SlaveState.cur_temp += data.add_temp
-			state.SlaveState.cost += data.add_cost
+			if(data.add_cost != 0)state.SlaveState.cost = data.add_cost
 		},
 		UpdateCenterTemp(state, temp){
 			state.SlaveState.center_air_temp = temp
