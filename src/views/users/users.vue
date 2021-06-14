@@ -72,7 +72,8 @@
 				},
 				Timer: {
 					timer0: null,
-					timer1: null
+					timer1: null,
+					timer2: null,
 				}
 			}
 		},
@@ -250,9 +251,11 @@
 						break;
 					case 6:
 						/* 设置从机状态汇报频率 */
-						this.$store.commit('data.interval', data.interval)
-						clearInterval(this.timer1);
-						this.timer1 = setInterval(this.send_data(), data.interval);
+						this.$store.commit('UpdateInterval', data.interval)
+						// clearInterval(this.Timer.timer1);
+						
+						this.Timer.timer1 = setInterval(this.send_date, parseInt(data.interval));
+						
 						break;
 				}
 			},
