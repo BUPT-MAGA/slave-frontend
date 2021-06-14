@@ -183,6 +183,30 @@
 					}))
 				}
 			},
+			heating_onclick() {
+				if (this.SlaveState.mode == 1) {
+					return;
+				}
+				this.$store.commmit('UpdateMode', 1)
+				this.$notify({
+					title: 'Mode',
+					message: '已设置为制热模式',
+					type: 'success',
+					duration: 2000
+				});
+			},
+			cooling_coclick() {
+				if (this.SlaveState.mode == 0) {
+					return;
+				}
+				this.$store.commmit('UpdateMode', 0)
+				this.$notify({
+					title: 'Mode',
+					message: '已设置为制冷模式',
+					type: 'success',
+					duration: 2000
+				});
+			},
 			onError: function(evt) {
 				console.log('连接错误');
 				evt
@@ -199,8 +223,10 @@
 				console.log('收到消息');
 				var message = JSON.parse(evt.data);
 				var eve_id = message.event_id;
+				
 				var data = message.data;
 				console.log(">>>>>")
+				console.log("event",eve_id)
 				console.log(data)
 				switch (eve_id) {
 					case 1:

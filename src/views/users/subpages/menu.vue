@@ -22,7 +22,7 @@
 			</el-col>
 			<el-col :span="4">
 				<div class="view-bar" name="mode_view">
-					<img alt="mode" v-bind:src='mode_src'>
+					<img alt="mode" v-bind:src='SlaveState.mode_src'>
 				</div>
 			</el-col>
 			<el-col :span="3">
@@ -148,32 +148,6 @@
 					type: 'success',
 					duration: 1000
 				});
-			},
-			heating_onclick() {
-				if (this.SlaveState.mode == 1) {
-					return;
-				}
-				this.SlaveState.mode = 1;
-				this.$notify({
-					title: 'Mode',
-					message: '已设置为制热模式',
-					type: 'success',
-					duration: 2000
-				});
-				this.mode_src = require("@/assets/images/sun.png")
-			},
-			cooling_coclick() {
-				if (this.SlaveState.mode == 0) {
-					return;
-				}
-				this.SlaveState.mode = 0;
-				this.$notify({
-					title: 'Mode',
-					message: '已设置为制冷模式',
-					type: 'success',
-					duration: 2000
-				});
-				this.mode_src = require("@/assets/images/snow.png")
 			},
 			speed_control_onclick() {
 				var speed = this.SlaveState.speed;
