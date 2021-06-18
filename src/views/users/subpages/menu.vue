@@ -6,6 +6,9 @@
 		<div>
 			房间： {{SlaveState.room_id}}
 		</div>
+		<div>
+			{{ SlaveState.speed_str}}
+		</div>
 		<el-row>
 			<el-col :span="3">
 				<div class="button-content"></div>
@@ -35,11 +38,13 @@
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="tar_temp">
+					<div>set</div>
 					{{ numFilter(SlaveState.tar_temp, 0) + "℃" }}
 				</div>
 			</el-col>
 			<el-col :span="9">
 				<div class="temp-display-content bg-purple" name="cur_temp">
+					<div>room</div>
 					{{ numFilter(display_cur_temp, 0) + "℃" }}
 				</div>
 			</el-col>
@@ -114,10 +119,12 @@
 				this.display_cost = this.SlaveState.cost
 			},
 			temp_add_onclick() {
-				if (this.SlaveState.tar_temp >= 30) {
+				// var max_temp = this.SlaveState.mode ? this.SlaveState.center_air_temp : 26 
+				var max_temp = 30
+				if (this.SlaveState.tar_temp >= max_temp) {
 					this.$notify({
 						title: 'Warn',
-						message: '最高设定温度为30℃',
+						message: `最高设定温度为${max_temp}℃`,
 						type: 'warning',
 						duration: 2000
 					});
@@ -132,10 +139,12 @@
 				});
 			},
 			temp_sub_onclick() {
-				if (this.SlaveState.tar_temp <= this.SlaveState.center_air_temp) {
+				// var min_temp = this.SlaveState.mode ? 26 : this.SlaveState.center_air_temp
+				var min_temp = 16
+				if (this.SlaveState.tar_temp <= min_temp) {
 					this.$notify({
 						title: 'Warn',
-						message: '最低设定温度为' + this.SlaveState.center_air_temp + '℃',
+						message: '最低设定温度为' + min_temp + '℃',
 						type: 'warning',
 						duration: 2000
 					});

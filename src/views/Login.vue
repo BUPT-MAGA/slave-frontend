@@ -91,9 +91,10 @@
 				} else {
 					console.log(user_id)
 					console.log(room_id)
-					var url = `ws://10.128.241.126:8000/ws/?room_id=${room_id}&user_id=${user_id}`
-					// var url = "ws://127.0.0.1:6789/"
 					// var url = `ws://123.60.215.79:8000/ws/?room_id=${room_id}&user_id=${user_id}`
+					// var url = "ws://127.0.0.1:6789/"
+					var url = `ws://10.128.238.197:8080/ws/?room_id=${room_id}&user_id=${user_id}`
+					// var url = `ws://10.128.238.197:8080/ws/?room_id=${room_id}&user_id=${user_id}`
 					// var url = "ws://139.9.141.88:6789/"
 					console.log(url)
 					this.$store.state.ws = new WebSocket(url);

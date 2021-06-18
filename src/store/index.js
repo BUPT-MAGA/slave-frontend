@@ -9,8 +9,8 @@ export default new Vuex.Store({
 		SlaveState: {
 			room_id: "101",
 			user_id: "",
-			cur_temp: 26,
-			tar_temp: 24,
+			cur_temp: 30,
+			tar_temp: 26,
 			room_temp: 30,
 			center_air_temp: 20,
 			mode: 0,
@@ -20,6 +20,7 @@ export default new Vuex.Store({
 			power_mode: 1,
 			use_time: 0,
 			mode_src: require("@/assets/images/snow.png"),
+			speed_str: '送风中'
 		},
 		ws: null,
 	},
@@ -52,8 +53,18 @@ export default new Vuex.Store({
 			if (mode == 0) {
 				state.SlaveState.mode_src = require("@/assets/images/snow.png")
 			} else {
-				state.SlaveState.mode_scr = require("@/assets/images/sun.png")
+				state.SlaveState.mode_src = require("@/assets/images/sun.png")
 			}
 		},
+		UpdateRoomTemp(state, temp) {
+			state.SlaveState.room_temp = temp
+		},
+		UpdateSpeedStr(state, hasWind){
+			if(hasWind){
+				state.SlaveState.speed_str = '送风中'
+			}else{
+				state.SlaveState.speed_str = '未送风'
+			}
+		}
 	}
 })

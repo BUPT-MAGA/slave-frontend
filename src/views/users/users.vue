@@ -65,6 +65,7 @@
 				show_setting: true,
 				show_money: false,
 				show_temp: false,
+				speed_state: 0,
 				RoomInfo: {
 					timelist: [],
 					templist: [],
@@ -74,14 +75,20 @@
 					timer0: null,
 					timer1: null,
 					timer2: null,
+					timer3: null
 				}
 			}
 		},
 		mounted() {
 			this.init()
 			this.Timer.timer0 = setInterval(this.getlist, 5000)
-			this.Timer.timer1 = setInterval(this.send_data, 100)
+			
+			
+			this.Timer.timer1 = setInterval(this.send_data, 1000)
+			console.log("Timer")
+			console.log(this.Timer.timer1)
 			this.Timer.timer2 = setInterval(this.tempNatualAdd, 500)
+			this.Timer.timer3 = setInterval(this.updateState, 1000)
 			this.$store.state.ws.onerror = this.onError
 			this.$store.state.ws.onclose = this.onClose
 			this.$store.state.ws.onmessage = this.onMessage
@@ -98,6 +105,23 @@
 			}
 		},
 		methods: {
+			updateState(){
+				if(this.SlaveState.mode){
+					if(this.speed_state == 0 && this.SlaveState.cur_temp < this.SlaveState.tar_temp - 1){
+						this.speed_state = 1
+					}
+					if(this.speed_state == 1 && this.SlaveState.cur_temp > this.SlaveState.tar_temp){
+						this.speed_state = 0
+					}
+				}else{
+					if(this.speed_state == 0 && this.SlaveState.cur_temp > this.SlaveState.tar_temp + 1){
+						this.speed_state = 1
+					}
+					if(this.speed_state == 1 && this.SlaveState.cur_temp < this.SlaveState.tar_temp){
+						this.speed_state = 0
+					}
+				}
+			},
 			/**
 			 * init() 初始化
 			 */
@@ -137,7 +161,8 @@
 			},
 			tempNatualAdd() {
 				var temp_dif = this.SlaveState.room_temp - this.SlaveState.cur_temp;
-				var add_temp = temp_dif * 0.01;
+				var add_temp = temp_dif * 0.05 * 0.1;
+				// var add_temp = 0.05;
 				this.$store.commit('UpdateRoomInfo', {
 					add_temp: add_temp,
 					add_cost: 0,
@@ -152,43 +177,100 @@
 					duration: 2000
 				});
 				this.ws.close()
-				this.RoomInfo.timelist = []
-				this.RoomInfo.templist = []
-				this.RoomInfo.moneylist = []
-
-				this.$store.commit('PowerModeChange')
-				this.$router.push({
-					path: '/',
-				});
 			},
 			send_data() {
-				if (this.SlaveState.cur_temp > this.SlaveState.tar_temp) {
-					this.ws.send(JSON.stringify({
-						event_id: 7,
-						data: {
-							cur_temp: this.SlaveState.cur_temp,
-							tar_temp: this.SlaveState.tar_temp,
-							mode: this.SlaveState.mode,
-							speed: this.SlaveState.speed
-						}
-					}))
-				} else {
-					this.ws.send(JSON.stringify({
-						event_id: 7,
-						data: {
-							cur_temp: this.SlaveState.cur_temp,
-							tar_temp: this.SlaveState.tar_temp,
-							mode: 2,
-							speed: this.SlaveState.speed
-						}
-					}))
+				if(this.SlaveState.mode == 1){
+					if (this.SlaveState.cur_temp < this.SlaveState.tar_temp && this.speed_state) {
+						this.$store.commit('UpdateSpeedStr', 1)
+						this.ws.send(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: this.SlaveState.mode,
+								speed: this.SlaveState.speed
+							}
+						}))
+						console.log(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: this.SlaveState.mode,
+								speed: this.SlaveState.speed
+							}
+						}))
+					} else {
+						this.$store.commit('UpdateSpeedStr', 0) 
+						this.ws.send(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: 2,
+								speed: this.SlaveState.speed
+							}
+						}))
+						console.log(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: 2,
+								speed: this.SlaveState.speed
+							}
+						}))
+					}
+				}else{
+					if (this.SlaveState.cur_temp > this.SlaveState.tar_temp && this.speed_state) {
+						this.$store.commit('UpdateSpeedStr', 1)
+						this.ws.send(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: this.SlaveState.mode,
+								speed: this.SlaveState.speed
+							}
+						}))
+						console.log(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: this.SlaveState.mode,
+								speed: this.SlaveState.speed
+							}
+						}))
+					} else {
+						this.$store.commit('UpdateSpeedStr', 0)
+						this.ws.send(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: 2,
+								speed: this.SlaveState.speed
+							}
+						}))
+						console.log(JSON.stringify({
+							event_id: 7,
+							data: {
+								cur_temp: Math.ceil(this.SlaveState.cur_temp),
+								tar_temp: this.SlaveState.tar_temp,
+								mode: 2,
+								speed: this.SlaveState.speed
+							}
+						}))
+					}
 				}
 			},
 			heating_onclick() {
 				if (this.SlaveState.mode == 1) {
 					return;
 				}
-				this.$store.commmit('UpdateMode', 1)
+				this.$store.commit('UpdateMode', 1)
+				this.$store.commit('UpdateRoomTemp', 18)
 				this.$notify({
 					title: 'Mode',
 					message: '已设置为制热模式',
@@ -200,13 +282,14 @@
 				if (this.SlaveState.mode == 0) {
 					return;
 				}
-				this.$store.commmit('UpdateMode', 0)
+				this.$store.commit('UpdateMode', 0)
+				this.$store.commit('UpdateRoomTemp', 30)
 				this.$notify({
 					title: 'Mode',
 					message: '已设置为制冷模式',
 					type: 'success',
 					duration: 2000
-				});
+				})
 			},
 			onError: function(evt) {
 				console.log('连接错误');
@@ -219,6 +302,20 @@
 			onClose: function(evt) {
 				console.log('关闭');
 				evt
+				this.$notify({
+					title: 'Internet Error',
+					message: '已断开连接',
+					type: 'error',
+					duration: 2000
+				});
+				this.RoomInfo.timelist = []
+				this.RoomInfo.templist = []
+				this.RoomInfo.moneylist = []
+				
+				this.$store.commit('PowerModeChange')
+				this.$router.push({
+					path: '/',
+				});
 			},
 			onMessage: function(evt) {
 				console.log('收到消息');
@@ -241,8 +338,23 @@
 						break;
 					case 3:
 						/* 主机送风 */
+						if(data.mode != this.SlaveState.mode){
+							this.$store.commit('UpdateCenterTemp', data.temp)
+							if (data.mode) {
+								this.heating_onclick();
+							} else {
+								this.cooling_coclick();
+							}
+						}
 						var temp_dif = data.temp - this.SlaveState.cur_temp;
-						var add_temp = temp_dif * 0.01 * data.speed;
+						var add_temp = temp_dif * 0.1 * (data.speed + 1) * 0.2;
+						// switch(data.speed){
+						// 	case
+						// }
+						// var add_temp = temp_dif * 0.1 * (data.speed + 1);
+						if(data.speed == -1){
+							return ;
+						}
 						var add_cost = data.cost;
 						this.$store.commit('UpdateRoomInfo', {
 							add_temp: add_temp,
@@ -252,21 +364,29 @@
 					case 6:
 						/* 设置从机状态汇报频率 */
 						this.$store.commit('UpdateInterval', data.interval)
-						// clearInterval(this.Timer.timer1);
+						clearInterval(this.Timer.timer1);
 						
-						this.Timer.timer1 = setInterval(this.send_date, parseInt(data.interval));
+						// this.Timer.timer1 = setInterval(this.send_data, 1000)
+						this.Timer.timer1 = setInterval(this.send_data, data.interval)
 						
 						break;
 				}
 			},
 		},
 		beforeDestroy() {
-			clearInterval(this.Timer.timer0);
+			console.log("destroyed!")
+			console.log("EndTimer")
+			console.log(this.Timer.timer1)
+			clearInterval(this.Timer.timer1)
+			
+			clearInterval(this.Timer.timer0)
 			this.Timer.timer0 = null;
-			clearInterval(this.Timer.timer1);
+			clearInterval(this.Timer.timer1)
 			this.Timer.timer1 = null;
-			clearInterval(this.Timer.timer2);
+			clearInterval(this.Timer.timer2)
 			this.Timer.timer2 = null;
+			clearInterval(this.Timer.timer3)
+			this.Timer.timer3 = null;
 		}
 	}
 </script>
