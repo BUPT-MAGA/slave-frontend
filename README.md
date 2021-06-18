@@ -20,5 +20,9 @@ yarn build
 yarn lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Change Host IP :star:
+
+at `src/views/Login.vue :94`
+
+change `url`  corresponding to Host
+
