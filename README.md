@@ -1,4 +1,9 @@
-# frontend
+# Mage slave-frontend
+
+## Framework
+
+- VUE
+- Element UI
 
 ## Project setup
 ```
